@@ -55,8 +55,8 @@ else:
 		print(model_file)
 
 	model = CNNet(opt.resblocks)
-	model.load_state_dict(torch.load(model_file))
-	model = model.cuda()
+	model.load_state_dict(torch.load(model_file, map_location=torch.device('cpu')))
+	# model = model.cuda()
 	model.eval()
 	print("Successfully loaded model.")
 

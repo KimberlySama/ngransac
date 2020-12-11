@@ -8,6 +8,7 @@ import random
 import torch
 import torch.optim as optim
 import ngransac
+from compare import find_ground_truth
 
 from network import CNNet
 from dataset import SparseDataset
@@ -15,10 +16,10 @@ import util
 
 parser = util.create_parser('NG-RANSAC demo for a user defined image pair. Fits an essential matrix (default) or fundamental matrix (-fmat) using OpenCV RANSAC vs. NG-RANSAC.')
 
-parser.add_argument('--image1', '-img1', default='images/demo1.jpg',
+parser.add_argument('--image1', '-img1', default='images/building_1.jpg',
 	help='path to image 1')
 
-parser.add_argument('--image2', '-img2', default='images/demo2.jpg',
+parser.add_argument('--image2', '-img2', default='images/building_2.jpg',
 	help='path to image 2')
 
 parser.add_argument('--outimg', '-out', default='demo.png',
@@ -72,8 +73,8 @@ if len(model_file) == 0:
 	print(model_file)
 
 model = CNNet(opt.resblocks)
-model.load_state_dict(torch.load(model_file))
-model = model.cuda()
+# model.load_state_dict(torch.load(model_file))
+# model = model.cuda()
 model.eval()
 print("Successfully loaded model.")
 
@@ -139,6 +140,8 @@ print("Number of valid matches:", len(good_matches))
 pts1 = np.array([pts1])
 pts2 = np.array([pts2])
 
+# true_pos, false_pos = find_ground_truth(pts1, pts2)
+
 ratios = np.array([ratios])
 ratios = np.expand_dims(ratios, 2)
 
@@ -186,7 +189,7 @@ correspondences = np.transpose(correspondences)
 correspondences = torch.from_numpy(correspondences).float()
 
 # predict neural guidance, i.e. RANSAC sampling probabilities
-log_probs = model(correspondences.unsqueeze(0).cuda())[0] #zero-indexing creates and removes a dummy batch dimension
+log_probs = model(correspondences.unsqueeze(0))[0] #zero-indexing creates and removes a dummy batch dimension
 probs = torch.exp(log_probs).cpu()
 
 out_model = torch.zeros((3, 3)).float() # estimated model

@@ -66,8 +66,8 @@ print("\nImage pairs: ", len(trainset), "\n")
 # create or load model
 model = CNNet(opt.resblocks)
 if len(opt.model) > 0:
-	model.load_state_dict(torch.load(opt.model))
-model = model.cuda()
+	model.load_state_dict(torch.load(opt.model, map_location=torch.device('cpu')))
+# model = model.cuda()
 model.train()
 
 optimizer = optim.Adam(model.parameters(), lr=opt.learningrate)
